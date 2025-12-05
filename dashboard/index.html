@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Practice - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Dental Practice Management</h1>
+            <nav class="main-nav">
+                <a href="../calendar/index.html" class="nav-link">Calendar</a>
+                <a href="../communication/index.html" class="nav-link">Communication</a>
+                <a href="index.html" class="nav-link active">Dashboard</a>
+            </nav>
+        </header>
+
+        <main class="dashboard-container">
+            <div class="dashboard-header">
+                <h2>Dashboard</h2>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-icon purple">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-label">Active Students</div>
+                        <div class="card-value" id="activeStudents">0</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-icon blue">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-label">Active Schools</div>
+                        <div class="card-value" id="activeSchools">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Oral Health Status (%) Summary</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="oralHealthChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>% of children receiving the following service</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="servicesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Tables Section -->
+            <div class="tables-section">
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>CSDP's Statistics By School</h3>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="schoolsTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>School Name</th>
+                                    <th># Student Serve</th>
+                                    <th># Receiving Sealant</th>
+                                    <th># Receiving Flouride</th>
+                                    <th># Receiving Prophy</th>
+                                    <th># Students in 3rd Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schoolsTableBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>CSDP's Statistics By Facilities</h3>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="facilitiesTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Facility Name</th>
+                                    <th># People Serve</th>
+                                    <th># Receiving Flouride</th>
+                                    <th># Receiving Prophy</th>
+                                </tr>
+                            </thead>
+                            <tbody id="facilitiesTableBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
+
