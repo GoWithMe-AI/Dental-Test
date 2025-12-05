@@ -32,17 +32,46 @@ class CommunicationApp {
     // Format date for display
     formatDate(dateString) {
         if (!dateString) return 'Not set';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-        });
+        
+        // Extract YYYY-MM-DD from string (handles both "2025-12-04" and "2025-12-04T00:00:00.000Z")
+        let dateStr = dateString;
+        if (typeof dateString === 'string' && dateString.includes('-')) {
+            dateStr = dateString.split('T')[0]; // Get just the date part
+        }
+        
+        // Handle YYYY-MM-DD format directly to avoid timezone issues
+        if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            const [year, month, day] = dateStr.split('-');
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            // Format directly from components to avoid any timezone conversion
+            return `${monthNames[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
+        }
+        
+        // Fallback: try to parse as Date object (for legacy data)
+        try {
+            const date = new Date(dateString);
+            if (!isNaN(date.getTime())) {
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            }
+        } catch (e) {
+            // Ignore parsing errors
+        }
+        
+        return 'Invalid date';
     }
 
     // Handle form submission
     handleSubmit(e) {
         e.preventDefault();
+        
+        // Store editing state BEFORE any operations that might clear it
+        const isEditing = !!this.editingRecordId;
+        const editingId = this.editingRecordId;
         
         const formData = {
             date: document.getElementById('date').value,
@@ -57,11 +86,18 @@ class CommunicationApp {
             createdBy: document.getElementById('createdBy').value.trim()
         };
 
-        if (this.editingRecordId) {
+        // Use the stored editingId to ensure we have the correct ID even if this.editingRecordId gets cleared
+        if (editingId) {
             // Update existing record
-            const index = this.records.findIndex(r => r.id === this.editingRecordId);
+            const index = this.records.findIndex(r => r.id === editingId);
             if (index !== -1) {
-                this.records[index] = { ...this.records[index], ...formData };
+                // Preserve the original id and createdAt
+                this.records[index] = { 
+                    ...this.records[index], 
+                    ...formData 
+                };
+            } else {
+                console.error('Record not found for update:', editingId);
             }
         } else {
             // Create new record
@@ -76,7 +112,7 @@ class CommunicationApp {
         this.saveRecords();
         this.renderRecords();
         this.clearForm();
-        this.showSuccessMessage();
+        this.showSuccessMessage(isEditing);
     }
 
     // Clear form
@@ -84,10 +120,16 @@ class CommunicationApp {
         document.getElementById('communicationForm').reset();
         this.setDefaultDate();
         this.editingRecordId = null;
+        
+        // Reset button text to "Save Communication"
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) {
+            submitBtn.textContent = 'Save Communication';
+        }
     }
 
     // Show success message
-    showSuccessMessage() {
+    showSuccessMessage(isEditing = false) {
         const formSection = document.querySelector('.form-section');
         const existingMessage = formSection.querySelector('.success-message');
         
@@ -102,7 +144,7 @@ class CommunicationApp {
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
             </svg>
-            <span>Communication record ${this.editingRecordId ? 'updated' : 'saved'} successfully!</span>
+            <span>Communication record ${isEditing ? 'updated' : 'saved'} successfully!</span>
         `;
         
         formSection.insertBefore(message, formSection.firstChild);
@@ -228,8 +270,9 @@ class CommunicationApp {
         const record = this.records.find(r => r.id === this.editingRecordId);
         if (!record) return;
 
-        document.getElementById('date').value = record.date;
-        document.getElementById('patientName').value = record.patientName;
+        // Populate form with record data
+        document.getElementById('date').value = record.date || '';
+        document.getElementById('patientName').value = record.patientName || '';
         document.getElementById('schoolYear').value = record.schoolYear || '';
         document.getElementById('currentDentist').value = record.currentDentist || '';
         document.getElementById('language').value = record.language || '';
@@ -237,8 +280,15 @@ class CommunicationApp {
         document.getElementById('dateEmailed').value = record.dateEmailed || '';
         document.getElementById('referralType').value = record.referralType || '';
         document.getElementById('notes').value = record.notes || '';
-        document.getElementById('createdBy').value = record.createdBy;
+        document.getElementById('createdBy').value = record.createdBy || '';
 
+        // Change button text to "Update Communication"
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) {
+            submitBtn.textContent = 'Update Communication';
+        }
+
+        // Close modal (editingRecordId is preserved for form submission)
         this.closeViewModal();
         
         // Scroll to form
@@ -260,7 +310,10 @@ class CommunicationApp {
     closeViewModal() {
         const modal = document.getElementById('viewModal');
         modal.classList.remove('show');
-        this.editingRecordId = null;
+        // Don't clear editingRecordId here - it should only be cleared when:
+        // 1. Form is successfully submitted (in handleSubmit)
+        // 2. Form is cleared (in clearForm)
+        // 3. User explicitly closes without editing
     }
 
     // Search functionality
@@ -315,10 +368,12 @@ class CommunicationApp {
         // Modal controls
         document.getElementById('closeViewModal').addEventListener('click', () => {
             this.closeViewModal();
+            this.editingRecordId = null; // Clear when closing via X button
         });
 
         document.getElementById('closeViewBtn').addEventListener('click', () => {
             this.closeViewModal();
+            this.editingRecordId = null; // Clear when closing via Close button
         });
 
         document.getElementById('editBtn').addEventListener('click', () => {
